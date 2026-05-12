@@ -35,6 +35,9 @@ cd codex-skills
 The installer uses merge semantics: it copies skills into `${CODEX_HOME:-$HOME/.codex}/skills`
 without deleting unrelated local skills.
 
+If you prefer to install a single skill from the repository, use the repo/path form supported by
+`skill-installer` and point it at `skills/<skill-name>`.
+
 ## F50/SOVINS Note
 
 `f50-sync` is for private local transport through the F50/SOVINS sync disk. Local F50 sync is trusted
