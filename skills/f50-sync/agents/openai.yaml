@@ -1,0 +1,4 @@
+interface:
+  display_name: "F50 Sync"
+  short_description: "Safely sync skills and memory via F50"
+  default_prompt: "Use $f50-sync to preview and merge my Codex skills and memory with the F50 sync disk."

@@ -1,0 +1,26 @@
+{
+  "skill_name": "web-search",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我搜索一下 2026 年 AI 搜索引擎对比。",
+      "expected_output": "激活 web-search，使用固定链路：Google -> Perplexity -> Bing，并说明遇阻自动切换。",
+      "files": [],
+      "assertions": [
+        {"type": "contains", "text": "Google"},
+        {"type": "contains", "text": "Perplexity"},
+        {"type": "contains", "text": "Bing"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "帮我找一下 OpenMinis 官网。",
+      "expected_output": "激活 web-search，按固定链路：Google -> Perplexity -> Bing。",
+      "files": [],
+      "assertions": [
+        {"type": "contains", "text": "Google"},
+        {"type": "contains", "text": "Bing"}
+      ]
+    }
+  ]
+}
