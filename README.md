@@ -14,6 +14,7 @@ current Codex validator.
 - `exa-search` - Exa web search workflow.
 - `f50-sync` - Private F50/SOVINS skill and memory transport workflow.
 - `neat-freak` - Knowledge cleanup and memory/docs reconciliation workflow.
+- `news-reader` - Authorized news article reading, extraction, and summary workflow.
 - `pdf` - PDF reading, rendering, extraction, and generation workflow.
 - `playwright` - Browser automation via Playwright.
 - `qiaomu-music-player-spotify` - Spotify playback plus music genre database.

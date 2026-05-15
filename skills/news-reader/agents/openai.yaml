@@ -1,0 +1,4 @@
+interface:
+  display_name: "News Reader"
+  short_description: "Read authorized news articles safely"
+  default_prompt: "Use $news-reader to read this article through my authorized session and summarize the key points."
