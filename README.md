@@ -10,6 +10,8 @@ current Codex validator.
 
 ## Skills
 
+See [`SKILL_INDEX.md`](./SKILL_INDEX.md) for risk tiers and review notes.
+
 - `doubao-tts` - Doubao / Volcengine text-to-speech workflow.
 - `exa-search` - Exa web search workflow.
 - `f50-sync` - Private F50/SOVINS skill and memory transport workflow.
@@ -22,6 +24,16 @@ current Codex validator.
 - `skill-vetter` - Security-first skill review workflow.
 - `surge` - Surge CLI operations and troubleshooting.
 - `web-search` - Browser-based web search workflow.
+
+## Validate
+
+Run the repository validator before publishing changes:
+
+```bash
+./scripts/validate-skills.sh
+```
+
+It checks each skill for a `SKILL.md`, required frontmatter, directory/name consistency, and obvious secret-looking material.
 
 ## Install
 
