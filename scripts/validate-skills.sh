@@ -52,10 +52,11 @@ if [ "$count" -eq 0 ]; then
   exit 1
 fi
 
-if grep -RInE 'BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY|aws_secret_access_key|client_secret|refresh_token|access_token|Authorization: Bearer|PRIVATE KEY' \
-  "$repo_root" \
+if grep -RInE \
   --exclude-dir=.git \
   --exclude='validate-skills.sh' \
+  'BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY|aws_secret_access_key|client_secret|refresh_token|access_token|Authorization: Bearer|PRIVATE KEY' \
+  "$repo_root" \
   >/tmp/codex_skills_secret_matches.$$; then
   echo "potential secret material found; review these matches:" >&2
   cat /tmp/codex_skills_secret_matches.$$ >&2
