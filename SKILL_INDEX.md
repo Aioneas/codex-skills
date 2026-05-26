@@ -32,7 +32,7 @@ Risk is based on the kind of access a skill normally needs, not on whether the s
 |---|---|---|
 | `surge` | Surge CLI operations and troubleshooting | Can mutate live network routing state. Collect baseline before changes. |
 | `rpi-workflow` | Research-plan-implement workflow helper | May run broad file/code operations depending on task. |
-| `f50-sync` | F50/SOVINS local sync workflow | Intended for trusted private local transport only. Do not publish synced private state. |
+| `codex-snyc` | Codex-snyc/iCloud local sync workflow with F50/SOVINS fallback | Intended for trusted private local transport only. Do not publish synced private state. |
 | `skill-vetter` | Security-first skill review workflow | Used to review other skills; keep its criteria strict. |
 
 ## Before installing a skill

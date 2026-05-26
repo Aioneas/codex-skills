@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small helper for F50/SOVINS skill and memory sync workflows."""
+"""Small helper for Codex-snyc/iCloud skill and memory sync workflows."""
 
 from __future__ import annotations
 
@@ -19,12 +19,26 @@ DEFAULTS = {
     "cc_switch_skills": "/Users/zhuyuhua/.cc-switch/skills",
     "codex_memories": "/Users/zhuyuhua/.codex/memories",
     "minis_mirror": "/Users/zhuyuhua/Library/Group Containers/group.com.openminis.app/MinisFileProvider",
+    "icloud_drive": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs",
+    "codex_sync_root": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs/Codex-snyc",
+    "codex_sync_skills": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs/Codex-snyc/skills",
+    "codex_sync_memory": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs/Codex-snyc/memory",
     "f50_adb_endpoint": "192.168.0.1:5555",
     "f50_adb_root": "/data/SAMBA_SHARE/机内存储/Minis同步盘",
     "f50_smb_hint": "smb://192.168.0.1/F50/Minis/",
 }
 
-SKIP_DIRS = {".git", "node_modules", "__pycache__", ".DS_Store"}
+HUB_DIRS = (
+    "memory",
+    "skills",
+    "projects",
+    "bundles",
+    "sync/manifests",
+    "backups",
+)
+
+SKIP_DIRS = {".git", "node_modules", "__pycache__"}
+SKIP_FILES = {".DS_Store"}
 PUBLIC_RISK_PARTS = (
     "auth.json",
     "subscription-url",
@@ -81,6 +95,8 @@ def walk_manifest(root: Path) -> dict[str, dict[str, object]]:
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
         base = Path(current)
         for name in names:
+            if name in SKIP_FILES:
+                continue
             path = base / name
             rel = path.relative_to(root).as_posix()
             if not path.is_file():
@@ -140,11 +156,34 @@ def cmd_status(_: argparse.Namespace) -> None:
             for key, path in DEFAULTS.items()
             if key not in {"f50_adb_endpoint", "f50_smb_hint"}
         },
+        "primary_hub": DEFAULTS["codex_sync_root"],
         "adb_devices": adb,
         "adb_f50_root_exists": adb_root,
         "mounted_volumes": [p.name for p in Path("/Volumes").iterdir()] if Path("/Volumes").exists() else [],
     }
     write_json(data)
+
+
+def cmd_init_hub(args: argparse.Namespace) -> None:
+    root = Path(args.root or DEFAULTS["codex_sync_root"]).expanduser().resolve()
+    created: list[str] = []
+    existing: list[str] = []
+    for rel in HUB_DIRS:
+        path = root / rel
+        if path.exists():
+            existing.append(rel)
+            continue
+        if args.apply:
+            path.mkdir(parents=True, exist_ok=True)
+        created.append(rel)
+    write_json(
+        {
+            "root": str(root),
+            "mode": "apply" if args.apply else "dry-run",
+            "created": created,
+            "existing": existing,
+        }
+    )
 
 
 def cmd_scan(args: argparse.Namespace) -> None:
@@ -165,6 +204,7 @@ def cmd_preview(args: argparse.Namespace) -> None:
 def cmd_merge_copy(args: argparse.Namespace) -> None:
     source = Path(args.source).expanduser().resolve()
     target = Path(args.target).expanduser().resolve()
+    history_root = Path(args.history_root).expanduser().resolve() if args.history_root else target
     plan = compare(source, target)
     copied: list[str] = []
     for rel in plan["added"] + plan["modified"]:
@@ -175,9 +215,9 @@ def cmd_merge_copy(args: argparse.Namespace) -> None:
             shutil.copy2(src, dst)
         copied.append(rel)
     plan["mode"] = "apply" if args.apply else "dry-run"
-    plan["copied"] = copied
+    plan["copied" if args.apply else "would_copy"] = copied
     if args.apply:
-        history_dir = target / "sync"
+        history_dir = history_root / "sync"
         history_dir.mkdir(parents=True, exist_ok=True)
         with (history_dir / "history.jsonl").open("a", encoding="utf-8") as fh:
             fh.write(json.dumps({"time": datetime.now(timezone.utc).isoformat(), "plan": plan}, ensure_ascii=False) + "\n")
@@ -200,11 +240,16 @@ def cmd_public_audit(args: argparse.Namespace) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="F50/SOVINS sync helper")
+    parser = argparse.ArgumentParser(description="Codex-snyc/iCloud sync helper")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    status = sub.add_parser("status", help="Check local paths and ADB availability")
+    status = sub.add_parser("status", help="Check local paths, iCloud hub, and F50 fallback availability")
     status.set_defaults(func=cmd_status)
+
+    init_hub = sub.add_parser("init-hub", help="Create the Codex-snyc hub directory tree; dry-run unless --apply is passed")
+    init_hub.add_argument("--root")
+    init_hub.add_argument("--apply", action="store_true")
+    init_hub.set_defaults(func=cmd_init_hub)
 
     scan = sub.add_parser("scan", help="Create a checksum manifest for a directory")
     scan.add_argument("--root", required=True)
@@ -218,6 +263,7 @@ def build_parser() -> argparse.ArgumentParser:
     merge = sub.add_parser("merge-copy", help="Merge-copy added/modified files; dry-run unless --apply is passed")
     merge.add_argument("--source", required=True)
     merge.add_argument("--target", required=True)
+    merge.add_argument("--history-root", help="Write sync/history.jsonl under this hub root instead of the target directory")
     merge.add_argument("--apply", action="store_true")
     merge.set_defaults(func=cmd_merge_copy)
 

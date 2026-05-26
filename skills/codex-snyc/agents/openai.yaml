@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex-snyc"
+  short_description: "Safely sync skills and memory via iCloud"
+  default_prompt: "Use $codex-snyc to preview and merge my Codex skills and memory with the Codex-snyc iCloud hub."

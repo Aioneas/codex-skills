@@ -1,15 +1,15 @@
-# F50/SOVINS Sync Workflow
+# Codex-snyc Sync Workflow
 
 ## Roles
 
-- `f50-sync`: transport, preview, merge, manifests, history, and safe copying.
+- `codex-snyc`: transport, preview, merge, manifests, history, and safe copying for Codex-snyc/iCloud first, with F50/SOVINS as fallback.
 - `neat-freak`: content cleanup, memory consolidation, docs/index repair, stale fact removal.
-- GitHub skill repo: public distribution of reusable skills only; this is separate from trusted local F50 sync.
+- GitHub skill repo: public distribution of reusable skills only; this is separate from trusted local private sync.
 
-## Recommended F50 Tree
+## Recommended Codex-snyc Tree
 
 ```text
-Minis同步盘/
+Codex-snyc/
 ├── memory/
 ├── skills/
 ├── projects/
@@ -33,7 +33,7 @@ Minis同步盘/
 - Source exists, target missing: added.
 - Source and target both exist, checksum differs: modified; copy only in merge mode after preview.
 - Target exists, source missing: target-only; do not delete by default.
-- Local F50 sync includes all files by default, including filenames that look sensitive. Do not skip them automatically.
+- Local private sync includes all files by default, including filenames that look sensitive. Do not skip them automatically.
 
 ## Public Skill Repo Policy
 
@@ -43,7 +43,7 @@ When publishing skills to GitHub:
 - Exclude system/bundled skills unless the user explicitly asks to vendor them.
 - Run a public-audit before pushing. Public publishing is the one place to review credentials, private keys, subscription URLs, generated caches, logs, and local state.
 - Include a top-level README explaining that the repo stores skills, not private memory.
-- Keep F50-specific private paths in instructions only when they are operational handles and not secrets.
+- Keep private sync paths in instructions only when they are operational handles and not secrets.
 
 ## neuDrive Ideas Worth Borrowing
 

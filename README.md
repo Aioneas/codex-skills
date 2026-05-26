@@ -14,7 +14,7 @@ See [`SKILL_INDEX.md`](./SKILL_INDEX.md) for risk tiers and review notes.
 
 - `doubao-tts` - Doubao / Volcengine text-to-speech workflow.
 - `exa-search` - Exa web search workflow.
-- `f50-sync` - Private F50/SOVINS skill and memory transport workflow.
+- `codex-snyc` - Private Codex-snyc/iCloud skill and memory transport workflow, with F50/SOVINS fallback.
 - `neat-freak` - Knowledge cleanup and memory/docs reconciliation workflow.
 - `news-reader` - Authorized news article reading, extraction, and summary workflow.
 - `pdf` - PDF reading, rendering, extraction, and generation workflow.
@@ -51,8 +51,8 @@ without deleting unrelated local skills.
 If you prefer to install a single skill from the repository, use the repo/path form supported by
 `skill-installer` and point it at `skills/<skill-name>`.
 
-## F50/SOVINS Note
+## Codex-snyc Note
 
-`f50-sync` is for private local transport through the F50/SOVINS sync disk. Local F50 sync is trusted
-and does not skip files by sensitive-looking names. Public GitHub publishing remains a separate
-review step.
+`codex-snyc` is for private local transport through the Codex-snyc iCloud hub. Local private sync is
+trusted and does not skip files by sensitive-looking names. F50/SOVINS can still be used as a
+fallback or archive target. Public GitHub publishing remains a separate review step.
