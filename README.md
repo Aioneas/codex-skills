@@ -14,7 +14,7 @@ See [`SKILL_INDEX.md`](./SKILL_INDEX.md) for risk tiers and review notes.
 
 - `doubao-tts` - Doubao / Volcengine text-to-speech workflow.
 - `exa-search` - Exa web search workflow.
-- `codex-snyc` - Private Codex-snyc/iCloud skill and memory transport workflow, with F50/SOVINS fallback.
+- `codex-snyc` - Private split iCloud skill and memory transport workflow: Codex writes `Codex-snyc`, Minis writes `Minis-snyc`.
 - `neat-freak` - Knowledge cleanup and memory/docs reconciliation workflow.
 - `news-reader` - Authorized news article reading, extraction, and summary workflow.
 - `pdf` - PDF reading, rendering, extraction, and generation workflow.
@@ -53,6 +53,7 @@ If you prefer to install a single skill from the repository, use the repo/path f
 
 ## Codex-snyc Note
 
-`codex-snyc` is for private local transport through the Codex-snyc iCloud hub. Local private sync is
-trusted and does not skip files by sensitive-looking names. F50/SOVINS can still be used as a
-fallback or archive target. Public GitHub publishing remains a separate review step.
+`codex-snyc` is for private local transport through split iCloud hubs. Codex writes `Codex-snyc`;
+Minis writes `Minis-snyc`; each treats the other hub as read-only reference by default. Local
+private sync is trusted and does not skip files by sensitive-looking names. F50/SOVINS can still be
+used as a fallback or archive target. Public GitHub publishing remains a separate review step.

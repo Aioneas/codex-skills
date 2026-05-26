@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small helper for Codex-snyc/iCloud skill and memory sync workflows."""
+"""Small helper for split Codex-snyc/Minis-snyc iCloud sync workflows."""
 
 from __future__ import annotations
 
@@ -23,6 +23,10 @@ DEFAULTS = {
     "codex_sync_root": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs/Codex-snyc",
     "codex_sync_skills": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs/Codex-snyc/skills",
     "codex_sync_memory": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs/Codex-snyc/memory",
+    "minis_sync_root": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs/Minis-snyc",
+    "minis_sync_skills": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs/Minis-snyc/skills",
+    "minis_sync_memory": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs/Minis-snyc/memory",
+    "minis_sync_shared": "/Users/zhuyuhua/Library/Mobile Documents/com~apple~CloudDocs/Minis-snyc/shared",
     "f50_adb_endpoint": "192.168.0.1:5555",
     "f50_adb_root": "/data/SAMBA_SHARE/机内存储/Minis同步盘",
     "f50_smb_hint": "smb://192.168.0.1/F50/Minis/",
@@ -33,6 +37,14 @@ HUB_DIRS = (
     "skills",
     "projects",
     "bundles",
+    "sync/manifests",
+    "backups",
+)
+
+MINIS_HUB_DIRS = (
+    "memory",
+    "skills",
+    "shared",
     "sync/manifests",
     "backups",
 )
@@ -142,6 +154,23 @@ def compare(source: Path, target: Path) -> dict[str, object]:
     }
 
 
+def hub_dirs(hub: str) -> tuple[str, ...]:
+    return MINIS_HUB_DIRS if hub == "minis" else HUB_DIRS
+
+
+def hub_roots(hub: str, explicit_root: str | None = None) -> list[tuple[str, Path]]:
+    if explicit_root:
+        return [(hub, Path(explicit_root).expanduser().resolve())]
+    if hub == "codex":
+        return [("codex", Path(DEFAULTS["codex_sync_root"]).expanduser().resolve())]
+    if hub == "minis":
+        return [("minis", Path(DEFAULTS["minis_sync_root"]).expanduser().resolve())]
+    return [
+        ("codex", Path(DEFAULTS["codex_sync_root"]).expanduser().resolve()),
+        ("minis", Path(DEFAULTS["minis_sync_root"]).expanduser().resolve()),
+    ]
+
+
 def cmd_status(_: argparse.Namespace) -> None:
     adb = run(["adb", "devices", "-l"], timeout=5)
     adb_root = run(
@@ -156,6 +185,16 @@ def cmd_status(_: argparse.Namespace) -> None:
             for key, path in DEFAULTS.items()
             if key not in {"f50_adb_endpoint", "f50_smb_hint"}
         },
+        "write_policy": {
+            "codex": {
+                "write_root": DEFAULTS["codex_sync_root"],
+                "read_reference_roots": [DEFAULTS["minis_sync_root"]],
+            },
+            "minis": {
+                "write_root": DEFAULTS["minis_sync_root"],
+                "read_reference_roots": [DEFAULTS["codex_sync_root"]],
+            },
+        },
         "primary_hub": DEFAULTS["codex_sync_root"],
         "adb_devices": adb,
         "adb_f50_root_exists": adb_root,
@@ -165,25 +204,27 @@ def cmd_status(_: argparse.Namespace) -> None:
 
 
 def cmd_init_hub(args: argparse.Namespace) -> None:
-    root = Path(args.root or DEFAULTS["codex_sync_root"]).expanduser().resolve()
-    created: list[str] = []
-    existing: list[str] = []
-    for rel in HUB_DIRS:
-        path = root / rel
-        if path.exists():
-            existing.append(rel)
-            continue
-        if args.apply:
-            path.mkdir(parents=True, exist_ok=True)
-        created.append(rel)
-    write_json(
-        {
-            "root": str(root),
-            "mode": "apply" if args.apply else "dry-run",
-            "created": created,
-            "existing": existing,
-        }
-    )
+    results = []
+    for name, root in hub_roots(args.hub, args.root):
+        created: list[str] = []
+        existing: list[str] = []
+        for rel in hub_dirs(name):
+            path = root / rel
+            if path.exists():
+                existing.append(rel)
+                continue
+            if args.apply:
+                path.mkdir(parents=True, exist_ok=True)
+            created.append(rel)
+        results.append(
+            {
+                "hub": name,
+                "root": str(root),
+                "created": created,
+                "existing": existing,
+            }
+        )
+    write_json({"mode": "apply" if args.apply else "dry-run", "hubs": results})
 
 
 def cmd_scan(args: argparse.Namespace) -> None:
@@ -240,14 +281,15 @@ def cmd_public_audit(args: argparse.Namespace) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Codex-snyc/iCloud sync helper")
+    parser = argparse.ArgumentParser(description="Split Codex-snyc/Minis-snyc iCloud sync helper")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    status = sub.add_parser("status", help="Check local paths, iCloud hub, and F50 fallback availability")
+    status = sub.add_parser("status", help="Check local paths, split iCloud hubs, and F50 fallback availability")
     status.set_defaults(func=cmd_status)
 
-    init_hub = sub.add_parser("init-hub", help="Create the Codex-snyc hub directory tree; dry-run unless --apply is passed")
+    init_hub = sub.add_parser("init-hub", help="Create Codex-snyc and/or Minis-snyc hub directory trees; dry-run unless --apply is passed")
     init_hub.add_argument("--root")
+    init_hub.add_argument("--hub", choices=["codex", "minis", "both"], default="codex")
     init_hub.add_argument("--apply", action="store_true")
     init_hub.set_defaults(func=cmd_init_hub)
 
